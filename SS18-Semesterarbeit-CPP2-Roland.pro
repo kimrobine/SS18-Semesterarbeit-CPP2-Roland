@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2018-09-14T13:18:33
+# Project created by QtCreator 2018-09-21T14:23:42
 #
 #-------------------------------------------------
 
@@ -25,14 +25,14 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
+        gamearea.cpp \
         gamewidget.cpp \
-        gamearea.cpp
+        player.cpp
 
 HEADERS += \
+        gamearea.h \
         gamewidget.h \
-        gamearea.h
+        player.h
 
 FORMS += \
-        gamewidget.ui
-
-DISTFILES +=
+        gamearea.ui

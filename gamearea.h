@@ -1,33 +1,45 @@
 #ifndef GAMEAREA_H
 #define GAMEAREA_H
-
-#include <QWidget>
+#include <QMainWindow>
 #include <QFile>
 #include <QLabel>
-#include <QFileDialog>
-#include <QMessageBox>
+#include <player.h>
 
+/* Die Klasse gameArea erstellt das Zeichenfeld, in dem sich der player und die Objekte bewegen,
+ * und ist für den Timer und die Punkteanzeige zuständig
+ */
 
-class gameArea : public QWidget
+namespace Ui {
+class gameArea;
+}
+
+class gameArea : public QMainWindow
 {
     Q_OBJECT
 
-    public:
-    gameArea(QWidget *parent = 0);
+public:
+    explicit gameArea(QWidget *parent = 0);
+    ~gameArea();
     void serialize(QFile &file);
     void deserialize(QFile &file);
     bool getRunning() {return running;}
     void setRunning(bool run);
+    void setGamePoints(QLabel *gamePoints){gamePointsLabel = gamePoints;}
 
-    private:
+    player *playerShape;
+
+private:
+    QTimer *timer;
+    Ui::gameArea *ui;
     bool running;
-    QPoint player;
-    QColor playerColor;
-    int buttonPressed;
+    QLabel *gamePointsLabel;
+    int gamePoints;
 
-    protected:
-    void paintEvent(QPaintEvent *event);
-    void keyPressEvent(QKeyEvent *event);
+private slots:
+    void updateGame();
+
+protected:
+     void paintEvent(QPaintEvent *event);
 };
 
 #endif // GAMEAREA_H

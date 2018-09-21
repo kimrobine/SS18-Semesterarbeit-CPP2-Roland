@@ -4,9 +4,11 @@
 #include <QGridLayout>
 #include <QFileDialog>
 #include <QMessageBox>
-#include "gamewidget.h"
 
-/* Erstelle gameWidget (Spielfenster) und gameArea (Spielfeld) */
+#include "gamewidget.h"
+#include "gamearea.h"
+
+/* Erstelle gameArea (Spielfeld) in gameWidget (Spielfenster) */
 gameWidget::gameWidget(QWidget *parent) : QWidget(parent)
 {
     /* Definition der Buttons innerhalb des Spiels */
@@ -26,39 +28,37 @@ gameWidget::gameWidget(QWidget *parent) : QWidget(parent)
     connect(loadGame, SIGNAL(clicked()), this, SLOT(loadGame()));
 
     /* Label für Punkteanzeige */
-    QLabel *pointCounter = new QLabel("Punkte");
-    pointCounter->setFont(QFont("Times", 16));
+    gamePoints = new QLabel("Punkte");
+    gamePoints->setFont(QFont("Times", 16));
 
     /* Neues Spielfeld wird erstellt */
-    mygameArea = new gameArea;
-    mygameArea->setFixedSize(700, 500);
-
+    myGameArea = new gameArea;
+    myGameArea->setGamePoints(gamePoints);
 
     /* Buttons, Punktelabel und Spielfeld werden im Spielfenster (Widget) erstellt */
     QGridLayout *gridLayout = new QGridLayout;
     gridLayout->addWidget(startstop, 0, 0);
     gridLayout->addWidget(saveGame, 2, 0);
     gridLayout->addWidget(loadGame, 4, 0);
-    gridLayout->addWidget(pointCounter, 0, 3);
-    gridLayout->addWidget(mygameArea, 1, 1, 7, 7);
+    gridLayout->addWidget(gamePoints, 0, 1.5);
+    gridLayout->addWidget(myGameArea, 1, 1, 7, 7);
     setLayout(gridLayout);
 
 }
-
 
 /* Sorgt dafür, dass sich der Status des Spielfeldes verändert (running true oder false)
  * und verändert den Text auf dem Start-Pause-Button */
 void gameWidget::startStop(void)
 {
-    if(mygameArea->getRunning()) {
-        mygameArea->setRunning(false);
+    if(myGameArea->getRunning()) {
+        myGameArea->setRunning(false);
         startstop->setText(tr("Start"));
+
     }else{
-        mygameArea->setRunning(true);
+        myGameArea->setRunning(true);
         startstop->setText(tr("Pause"));
     }
  }
-
 
 /* Spielstand speichern */
 void gameWidget::saveGame(){
@@ -80,7 +80,7 @@ void gameWidget::saveGame(){
                                  tr("Folgende Datei kann nicht verwendet werden: ") + fileName,QMessageBox::Ok);
         }
 
-        mygameArea->serialize(file);
+        myGameArea->serialize(file);
         file.close();
         return;
     }
@@ -106,7 +106,7 @@ void gameWidget::loadGame(void)
                                  tr("Folgende Datei kann nicht geoeffnet werden: ") + fileName,QMessageBox::Ok);
         }
 
-        mygameArea->deserialize(file);
+        myGameArea->deserialize(file);
         file.close();
         return;
     }

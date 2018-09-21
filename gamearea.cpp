@@ -1,70 +1,86 @@
 #include <QtGui>
 #include <QString>
+#include <QApplication>
+#include <QPushButton>
+#include <QGridLayout>
+#include <QFileDialog>
 #include <QMessageBox>
+#include <cstdlib>
 
-#include <iostream>
+#include "gamewidget.h"
 #include "gamearea.h"
+#include "ui_gamearea.h"
+#include "player.h"
 
-/* Definiert das Spielfeld (gameArea) zu Beginn als nicht aktiv & initialisiert die Position des Spielers */
-gameArea::gameArea(QWidget *parent) : QWidget(parent)
+gameArea::gameArea(QWidget *parent) : QMainWindow(parent),
+    ui(new Ui::gameArea)
 {
-    player.setX(this->width()/2+20);
-    player.setY(460);
+    setAutoFillBackground(true);
+    setMouseTracking(false);
+    ui->setupUi(this);
 
-    setFocusPolicy(Qt::StrongFocus);
+    //erstelle den Player in der gameArea
+    playerShape = new player(this);
+    setCentralWidget(playerShape);
+
     setRunning(false);
     running = false;
+
+    //Anfangswert der Punkte
+    gamePoints = 0;
+
+    //erstelle den Timer
+    timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(updateGame()));
+    //starte den Timer mit einem timeout von 300 Millisekunden
+    timer->start(300);
+
 }
 
-/* Zeichnet den Spieler in das Spielfeld */
-void gameArea::paintEvent(QPaintEvent*)
+/*Lässt Punkteanzeige kontinuierlich ansteigen*/
+void gameArea::updateGame()
 {
-    QPainter painter;
-    painter.begin(this);
-    painter.fillRect (player.x(), player.y(), 30, 30, playerColor);
-    painter.end();
-}
-
-
-/* Ermöglicht die Bewegung des Spielers über linke und rechte Pfeiltaste
- * bestimmt, um wie viele Pixel der Avatar sich in die jeweilige Richtung bewegt */
-void gameArea::keyPressEvent(QKeyEvent *event)
-{
-    if(running) {
-        if(event->key() == Qt::Key_Right) {
-            player.rx() += 25;
-        } else if (event->key() == Qt::Key_Left) {
-            player.rx() -= 25;
-        }
+    if(running){
+        //Punkte sollen jeweils um 10 ansteigen
+        gamePoints += 10;
         update();
+
+        //Label 'Punkte' hinter steigende Punkteanzahl setzen
+        gamePointsLabel->setText(QString::number(gamePoints) + " Punkte");
+
     }
 }
+
+void gameArea::paintEvent(QPaintEvent * ){
+ //hier müssen fallende Objekte gemalt werden?
+}
+
 
 /* Legt die Farbgebung des Spielfeldes im aktiven und inaktiven Zustand fest */
 void gameArea::setRunning(bool run)
 {
     running = run;
     if (run) {
-        playerColor.setRgb (101, 81, 255);
         setPalette(QPalette(QColor (0,0,0)));
         setAutoFillBackground (true);
     }
 
     else {
-        playerColor.setRgb (207, 201, 255);
         setPalette(QPalette(QColor (169,169,169)));
         setAutoFillBackground (true);
     }
 }
 
+/*Festlegung der Aktion für die saveGame()-Funktion */
 void gameArea::serialize(QFile &file)
 {
     QTextStream out(&file);
     out << "xPosition" << endl;
-    out << "x " << player.x() << endl;
+    out << "x " << playerShape->getPlayerX() << endl;
 }
 
- void gameArea::deserialize(QFile &file)
+/*Festlegung der Aktion für die loadGame()-Funktion */
+void gameArea::deserialize(QFile &file)
 {
     char c;
     QTextStream in(&file);
@@ -89,6 +105,11 @@ void gameArea::serialize(QFile &file)
 
     int x;
     in >> x;
-    player.setX(x);
+    playerShape->setPlayerX(x);
     update();
+}
+
+gameArea::~gameArea()
+{
+    delete ui;
 }
