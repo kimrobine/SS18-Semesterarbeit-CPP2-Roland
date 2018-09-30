@@ -7,6 +7,7 @@
 
 #include "gamewidget.h"
 #include "gamearea.h"
+#include "element.h"
 
 /* Erstelle gameArea (Spielfeld) in gameWidget (Spielfenster) */
 gameWidget::gameWidget(QWidget *parent) : QWidget(parent)
@@ -40,7 +41,7 @@ gameWidget::gameWidget(QWidget *parent) : QWidget(parent)
     gridLayout->addWidget(startstop, 0, 0);
     gridLayout->addWidget(saveGame, 2, 0);
     gridLayout->addWidget(loadGame, 4, 0);
-    gridLayout->addWidget(gamePoints, 0, 1.5);
+    gridLayout->addWidget(gamePoints, 0, 1);
     gridLayout->addWidget(myGameArea, 1, 1, 7, 7);
     setLayout(gridLayout);
 
@@ -54,9 +55,20 @@ void gameWidget::startStop(void)
         myGameArea->setRunning(false);
         startstop->setText(tr("Start"));
 
-    }else{
+
+    } else {
         myGameArea->setRunning(true);
         startstop->setText(tr("Pause"));
+
+
+        //Enemies erscheinen nur im Spielfeld, wenn vector leer ist
+        //also nur beim ersten Spielstart/Neustart des Programms
+        if (myGameArea->enemies.size()==0) {
+        myGameArea->enemies.push_back(new element());
+        myGameArea->enemies.push_back(new element());
+        myGameArea->enemies.push_back(new element());
+        myGameArea->enemies.push_back(new element());
+        }
     }
  }
 
@@ -69,7 +81,7 @@ void gameWidget::saveGame(){
 
     dialog.setFileMode(QFileDialog::AnyFile);
     fileName = dialog.getSaveFileName(this,
-                                      tr("Speichern als"), ".", tr("mySavedGame (*.mysg)"));
+                                      tr("Speichern als"), ".", tr("mySaveGame (*.mysg)"));
 
     if (fileName.isNull()==false)
     {
@@ -95,7 +107,7 @@ void gameWidget::loadGame(void)
 
     dialog.setFileMode(QFileDialog::AnyFile);
     fileName = dialog.getOpenFileName(this,
-                                      tr("Speichern als"), ".", tr("mySavedGame (*.mysg)"));
+                                      tr("Speichern als"), ".", tr("mySaveGame (*.mysg)"));
 
     if (fileName.isNull()==false)
     {

@@ -1,21 +1,22 @@
+#include <QPainter>
+#include <QDebug>
+
 #include "gamewidget.h"
 #include "gamearea.h"
 #include "player.h"
-#include <QPainter>
-#include <QDebug>
 
 /* Konstruktor & Definition der Starteinstellungen */
 player::player(QWidget *parent) : QWidget(parent) {
     //Anfangs-X-Korrdinate des Spielers
     setPlayerX(350);
     //Anfangs-Y-Korrdinate des Spielers
-    setPlayerY(510);
+    setPlayerY(515);
     //Schrittweite der Bewegung
-    getPlayerMove(25);
+    getPlayerMove(30);
     //Breite des Spielerrechtecks
-    setPlayerWidth(30);
+    setPlayerWidth(40);
     //Höhe des Spielerrechtecks
-    setPlayerHeight(30);
+    setPlayerHeight(40);
     //wird für keyPressEvent/Ausführung der Bewegung benötigt
     setFocusPolicy(Qt::StrongFocus);
 }
@@ -23,39 +24,47 @@ player::player(QWidget *parent) : QWidget(parent) {
 /* Definition der player-Bewegung */
 void player::move(Movement::playerMovement status) {
 
-       switch (status) {
-       case playerGoesLeft:
-           setPlayerX(getPlayerX() - getPlayerMove());
-           QWidget::update();
-           break;
-       case playerGoesRight:
-           setPlayerX(getPlayerX() + getPlayerMove());
-           QWidget::update();
-           break;
-       default:
-           break;
-       }
+    switch (status) {
+    //im Fall playerGoesLeft, also Spieler soll sich nach links bewegen
+    case playerGoesLeft:
+        //setze X-Position des Players auf Ergebnis
+        //der Subtraktion von aktuellem X-Wert mit Schrittweite PlayerMove
+        setPlayerX(getPlayerX() - getPlayerMove());
+        break;
+        //im Fall playerGoesRight, also Spieler soll sich nach rechts bewegen
+    case playerGoesRight:
+        //setze X-Position des Players auf Ergebnis
+        //der Addition von aktuellem X-Wert mit Schrittweite PlayerMove
+        setPlayerX(getPlayerX() + getPlayerMove());
+        break;
+        //Standard: führe nichts aus
+    default:
+        break;
     }
+}
 
 /* Den Spieler ins Spielfeld malen */
 void player::paintEvent(QPaintEvent *event) {
 
     Q_UNUSED(event);
+    //definiere den Painter & beginne zu zeichnen
     QPainter painter;
-    //erschaffe ein Rechteck mit den zuvor im Konstruktor definierten Koordinaten
-    QRectF rectangle(getPlayerX(), getPlayerY(), getPlayerWidth(), getPlayerHeight());
     painter.begin(this);
+    //definiere ein Rechteck mit den zuvor im Konstruktor definierten Koordinaten
+    QRectF rectangle(getPlayerX(), getPlayerY(), getPlayerWidth(), getPlayerHeight());
 
-    //mit der Farbe Blau
+    //definiere die Farbe Blau
     QColor playerRect ("#0000cc");
-    //und schraffiere das Innere des Quadrates
+    //und setze den Style, um  das Innere des Quadrates zu schraffieren
     Qt::BrushStyle playerStyle = Qt::BDiagPattern;
+    //definiere die Brush mit der Farbe und dem Style
     QBrush playerBrush (playerRect, playerStyle);
+    //setze sie für das paintevent, um Spieler zu malen
     painter.setBrush(playerBrush);
-    //zeichne eine Aussenlinie
+    //zeichne eine blaue Aussenlinie um das Rechteck
     painter.setPen(QPen(Qt::blue, 3));
 
-    //zeichne das Rechteck
+    //zeichne ein Rechteck mit den Definitionen aus rectangle
     painter.drawRect(rectangle);
     painter.end();
 }
@@ -63,24 +72,18 @@ void player::paintEvent(QPaintEvent *event) {
 /* Defintion der Aktion bei Drücken der Pfeiltasten */
 void player::keyPressEvent(QKeyEvent *keyEvent)
 { 
-    /* Einbinden, dass Player sich bei running=false nicht bewegen lässt
-    gameArea game;
-    game.getRunning();
-    if (game.getRunning()==false) //playerMove funktioniert
-    //if (game.getRunning()==true) //playerMove funktioniert nicht
-    */
-
     switch (keyEvent->key()) {
     //wenn die linke Pfeiltaste gedrückt wird
     case Qt::Key_Left:
         //führe Funktion move mit Status playerGoesLeft aus
         move(playerGoesLeft);
         break;
-    //wenn die rechte Pfeiltaste gedrückt wird
+        //wenn die rechte Pfeiltaste gedrückt wird
     case Qt::Key_Right:
         //führe Funktion move mit Status playerGoesRight aus
         move(playerGoesRight);
         break;
+        //für alle anderen KeyPressEvents: führe nichts aus
     default:
         break;
     }
@@ -91,12 +94,23 @@ void player::setPlayerX(int pX)
 {
     playerX = pX;
 
-    //Festlegen, dass sich der Spieler nur innerhalb des Zeichenfeldes bewegen soll
+    /*Spieler-Rect soll sich nur innerhalb der gameArea bewegen*/
+
+    //Bewegung nach links
+    //wenn X-Koordinate des Spielers kleiner oder gleich 3
     if (playerX <=3) {
+        //setze X-Koordinate auf 3
+        //Bewegung weiter nach links so nicht möglich,
+        //da sobald <=3 immer 3
         playerX = 3;
     }
-    else if (pX >=687) {
-        playerX = 687;
+    //Bewegung nach rechts
+    //wenn X-Koordinate des Spielers größer oder gleich 675
+    else if (pX >=675) {
+        //setze X-Koordinate auf 675
+        //Bewegung weiter nach rechts so nicht möglich,
+        //da sobald >=675 immer 675
+        playerX = 675;
     }
 }
 

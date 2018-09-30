@@ -3,8 +3,9 @@
 #include <QWidget>
 #include <QLabel>
 #include <QPushButton>
-#include <gamearea.h>
-#include <player.h>
+
+#include "gamearea.h"
+#include "player.h"
 
 /* Die Klasse gameWidget erstellt das Spielfenster, die Buttons und ihre verknüpften Funktionen
  * sowie den Punkte-Counter und intialisiert das Zeichenfeld, in dem das Spiel stattfindet (gameArea)

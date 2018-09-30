@@ -27,12 +27,14 @@ SOURCES += \
         main.cpp \
         gamearea.cpp \
         gamewidget.cpp \
-        player.cpp
+        player.cpp \
+        element.cpp
 
 HEADERS += \
         gamearea.h \
         gamewidget.h \
-        player.h
+        player.h \
+        element.h
 
 FORMS += \
         gamearea.ui
