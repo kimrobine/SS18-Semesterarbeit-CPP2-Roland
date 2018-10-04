@@ -4,15 +4,18 @@
 #include <QWidget>
 #include <QKeyEvent>
 
+#include "gamearea.h"
+
 /* Die Klasse player beinhaltet die nötigen Funktionen zur Erzeugung und Bewegung des Spieleravatars:
  * getter und setter-Methoden für die Positions- und Schrittweitenfestlegung des Spielers,
  * paint- und keyPressEvent zur Erzeugung und Bewegungsfähigkeit in der gameArea
  * Die Klasse Movement dient als Hilfsklasse für die player-Klasse und definiert die Bewegungen des Players
  * in einem enum, um sie später in der move()-Funktion verwenden zu können, und initalisiert die move()-Funktion
  * der player-Klasse dynamisch, mit dem enum und einem Ausgangswert
+ * Angelehnt an folgendes Beispiel: https://www.badprog.com/c-qt-framework-moving-a-shape-with-arrow-keys
  */
 
-/* Hilfsklasse für Bewegung des player */
+/* Hilfsklasse für Bewegung des Spielers */
 class Movement {
 public:
     enum playerMovement {
@@ -22,15 +25,15 @@ public:
 
 public:
     virtual ~Movement();
-    virtual void move(playerMovement) = 0;
+    virtual void movePlayer(playerMovement) = 0;
 };
 
-/* Klasse für Generierung und Bewegung des player */
+/* Klasse für Generierung und Bewegung des Spielers */
 class player : public QWidget, public Movement
 {
 public:
     player(QWidget *parent = 0);
-    void move(playerMovement);
+    void movePlayer(playerMovement);
 
     void setPlayerX(int pX);
     int getPlayerX() const;
@@ -44,6 +47,12 @@ public:
     void setPlayerHeight(int pHeight);
     int getPlayerHeight() const;
 
+    //für abgeschwächte Darstellung des Spielers
+    void setPlayerColor(QColor c);
+    QColor getPlayerColor();
+    void setPlayerPattern (Qt::BrushStyle s);
+    Qt::BrushStyle getPlayerPattern();
+
 
 protected:
     void keyPressEvent(QKeyEvent *keyEvent);
@@ -55,8 +64,11 @@ private:
     int playerMove;
     int playerWidth;
     int playerHeight;
-};
 
-/* Angelehnt an folgendes Beispiel: https://www.badprog.com/c-qt-framework-moving-a-shape-with-arrow-keys */
+    //für abgeschwächte Darstellung des Spielers
+    QColor playerColor;
+    Qt::BrushStyle playerPattern;
+
+};
 
 #endif // PLAYER_H

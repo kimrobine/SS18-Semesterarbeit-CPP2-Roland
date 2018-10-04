@@ -22,7 +22,7 @@ player::player(QWidget *parent) : QWidget(parent) {
 }
 
 /* Definition der player-Bewegung */
-void player::move(Movement::playerMovement status) {
+void player::movePlayer(Movement::playerMovement status) {
 
     switch (status) {
     //im Fall playerGoesLeft, also Spieler soll sich nach links bewegen
@@ -41,6 +41,24 @@ void player::move(Movement::playerMovement status) {
     default:
         break;
     }
+
+}
+
+/* Defintion der Set- und Get-Methoden für die optische Darstellung des players */
+void player::setPlayerColor (QColor c) {
+    playerColor = c;
+}
+
+void player::setPlayerPattern (Qt::BrushStyle s) {
+    playerPattern = s;
+}
+
+QColor player::getPlayerColor() {
+    return playerColor;
+}
+
+Qt::BrushStyle player::getPlayerPattern() {
+    return playerPattern;
 }
 
 /* Den Spieler ins Spielfeld malen */
@@ -53,16 +71,14 @@ void player::paintEvent(QPaintEvent *event) {
     //definiere ein Rechteck mit den zuvor im Konstruktor definierten Koordinaten
     QRectF rectangle(getPlayerX(), getPlayerY(), getPlayerWidth(), getPlayerHeight());
 
-    //definiere die Farbe Blau
-    QColor playerRect ("#0000cc");
-    //und setze den Style, um  das Innere des Quadrates zu schraffieren
-    Qt::BrushStyle playerStyle = Qt::BDiagPattern;
-    //definiere die Brush mit der Farbe und dem Style
-    QBrush playerBrush (playerRect, playerStyle);
-    //setze sie für das paintevent, um Spieler zu malen
+    QBrush playerBrush (getPlayerColor(), playerPattern);
     painter.setBrush(playerBrush);
-    //zeichne eine blaue Aussenlinie um das Rechteck
-    painter.setPen(QPen(Qt::blue, 3));
+    //zeichne eine Aussenlinie um das Rechteck
+    //in der Farbe des Spielers
+    QPen playerPen (getPlayerColor());
+    //und mache sie 3 pkt Breit
+    playerPen.setWidth(3);
+    painter.setPen(playerPen);
 
     //zeichne ein Rechteck mit den Definitionen aus rectangle
     painter.drawRect(rectangle);
@@ -76,20 +92,21 @@ void player::keyPressEvent(QKeyEvent *keyEvent)
     //wenn die linke Pfeiltaste gedrückt wird
     case Qt::Key_Left:
         //führe Funktion move mit Status playerGoesLeft aus
-        move(playerGoesLeft);
+        movePlayer(playerGoesLeft);
         break;
         //wenn die rechte Pfeiltaste gedrückt wird
     case Qt::Key_Right:
         //führe Funktion move mit Status playerGoesRight aus
-        move(playerGoesRight);
+        movePlayer(playerGoesRight);
         break;
         //für alle anderen KeyPressEvents: führe nichts aus
     default:
         break;
     }
+
 }
 
-/* Defintion der Get- und Set-Methoden für die Position des players */
+/* Defintion der Set- und Get-Methoden für die Position des players */
 void player::setPlayerX(int pX)
 {
     playerX = pX;
