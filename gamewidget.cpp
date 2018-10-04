@@ -14,23 +14,28 @@ gameWidget::gameWidget(QWidget *parent) : QWidget(parent)
 {
     /* Definition der Buttons innerhalb des Spiels */
     /* Start-Pause-Button */
-    startstop = new QPushButton(tr("Start"));
-    startstop->setFont(QFont("Times", 20, QFont::Bold));
-    connect(startstop, SIGNAL(clicked()), this, SLOT(startStop()));
+    startStopButton = new QPushButton(tr("Start"));
+    startStopButton->setFont(QFont("Times", 20, QFont::Bold));
+    connect(startStopButton, SIGNAL(clicked()), this, SLOT(startStopGame()));
 
     /* Speichern-Button*/
-    QPushButton *saveGame = new QPushButton(tr("Speichern"));
-    saveGame->setFont(QFont("Times", 20, QFont::Bold));
-    connect(saveGame, SIGNAL(clicked()), this, SLOT(saveGame()));
+    saveButton = new QPushButton(tr("Speichern"));
+    saveButton->setFont(QFont("Times", 20, QFont::Bold));
+    connect(saveButton, SIGNAL(clicked()), this, SLOT(saveGame()));
 
     /* Laden-Button */
-    QPushButton *loadGame = new QPushButton(tr("Laden"));
-    loadGame->setFont(QFont("Times", 20, QFont::Bold));
-    connect(loadGame, SIGNAL(clicked()), this, SLOT(loadGame()));
+    loadButton = new QPushButton(tr("Laden"));
+    loadButton->setFont(QFont("Times", 20, QFont::Bold));
+    connect(loadButton, SIGNAL(clicked()), this, SLOT(loadGame()));
+
+    /* Ende-Button: Anwendung beendet, Widget schließen */
+    endButton = new QPushButton(tr("Ende"));
+    endButton->setFont(QFont("Times", 20, QFont::Bold));
+    connect(endButton, SIGNAL(clicked()), qApp, SLOT(quit()));
 
     /* Label für Punkteanzeige */
     gamePoints = new QLabel("Punkte");
-    gamePoints->setFont(QFont("Times", 16));
+    gamePoints->setFont(QFont("Helvetica", 16));
 
     /* Neues Spielfeld wird erstellt */
     myGameArea = new gameArea;
@@ -38,9 +43,10 @@ gameWidget::gameWidget(QWidget *parent) : QWidget(parent)
 
     /* Buttons, Punktelabel und Spielfeld werden im Spielfenster (Widget) erstellt */
     QGridLayout *gridLayout = new QGridLayout;
-    gridLayout->addWidget(startstop, 0, 0);
-    gridLayout->addWidget(saveGame, 2, 0);
-    gridLayout->addWidget(loadGame, 4, 0);
+    gridLayout->addWidget(startStopButton, 0, 0);
+    gridLayout->addWidget(saveButton, 2, 0);
+    gridLayout->addWidget(loadButton, 4, 0);
+    gridLayout->addWidget(endButton, 6,0);
     gridLayout->addWidget(gamePoints, 0, 1);
     gridLayout->addWidget(myGameArea, 1, 1, 7, 7);
     setLayout(gridLayout);
@@ -48,29 +54,32 @@ gameWidget::gameWidget(QWidget *parent) : QWidget(parent)
 }
 
 /* Sorgt dafür, dass sich der Status des Spielfeldes verändert (running true oder false)
- * und verändert den Text auf dem Start-Pause-Button */
-void gameWidget::startStop(void)
+ * und verändert den Text auf dem Star-Pause-Button */
+void gameWidget::startStopGame(void)
 {
     if(myGameArea->getRunning()) {
+        //das Spiel ist nicht aktiv
         myGameArea->setRunning(false);
-        startstop->setText(tr("Start"));
+        //der Start-Pause-Button hat die Beschriftung 'Start'
+        startStopButton->setText(tr("Start"));
 
+        //man kann nur Speichern & Laden, wenn das Spiel vom User über den
+        //Start-Pause-Button pausiert wird
+        saveButton->setEnabled(true);
+        loadButton->setEnabled(true);
 
     } else {
+        //das Spiel ist aktiv
         myGameArea->setRunning(true);
-        startstop->setText(tr("Pause"));
+        //der Start-Pause-Button hat die Beschriftung 'Pause'
+        startStopButton->setText(tr("Pause"));
 
+        //wenn das Spiel läuft, ist speichern & laden nicht möglich
+        saveButton->setEnabled(false);
+        loadButton->setEnabled(false);
 
-        //Enemies erscheinen nur im Spielfeld, wenn vector leer ist
-        //also nur beim ersten Spielstart/Neustart des Programms
-        if (myGameArea->enemies.size()==0) {
-        myGameArea->enemies.push_back(new element());
-        myGameArea->enemies.push_back(new element());
-        myGameArea->enemies.push_back(new element());
-        myGameArea->enemies.push_back(new element());
-        }
     }
- }
+}
 
 /* Spielstand speichern */
 void gameWidget::saveGame(){
@@ -92,13 +101,14 @@ void gameWidget::saveGame(){
                                  tr("Folgende Datei kann nicht verwendet werden: ") + fileName,QMessageBox::Ok);
         }
 
+        //rufe die Methode zum Speichern der einzelnen Spielinformationen auf
         myGameArea->serialize(file);
         file.close();
         return;
     }
 }
 
-/* Alten Spielstand laden */
+/* Gespeicherten Spielstand laden */
 void gameWidget::loadGame(void)
 {
     QFileDialog dialog(this);
@@ -118,6 +128,7 @@ void gameWidget::loadGame(void)
                                  tr("Folgende Datei kann nicht geoeffnet werden: ") + fileName,QMessageBox::Ok);
         }
 
+        //rufe die Methode zum Laden der einzelnen Spielinformationen auf
         myGameArea->deserialize(file);
         file.close();
         return;

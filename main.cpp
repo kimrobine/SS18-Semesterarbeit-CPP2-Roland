@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     //Erzeuge ein Widget-Objekt w auf Basis der Klasse gameWidget
     gameWidget w;
     //Lege die Abmessungen des gameWidget fest
-    w.setGeometry(0 , 0, 700, 500);
+    //w.setGeometry(0 , 0, 700, 500);
     //Setze sie auf eine feste Größe
     w.setFixedSize(890,650);
     //Gebe dem Spielfenster einen Titel

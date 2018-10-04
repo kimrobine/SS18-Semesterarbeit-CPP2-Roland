@@ -14,21 +14,41 @@
 
 class gameWidget : public QWidget
 {
-    Q_OBJECT //Makro, Klasse enthält QT spezifische Anweisungen
+    Q_OBJECT
+    //Makro-Anweisung, enthält QT spezifische Befehle
+    //wird benötigt, um slots nutzen zu können
 
 public:
-    gameArea *myGameArea;
+    //Konstruktor
     gameWidget(QWidget *parent = 0);
-    QLabel *getGamePoints(){return gamePoints;}
+
+    //Deklaration des Zeichenfeldes myGameArea
+    //auf Basis der Klasse gameArea
+    gameArea *myGameArea;
 
 private:
-    QPushButton *startstop;
+    //Buttons innerhalb des Spiels
+
+    //um das Spiel zu starten & stoppen
+    QPushButton *startStopButton;
+    //um das Spiel zu starten & stoppen
+    QPushButton *saveButton;
+    //um das Spiel zu starten & stoppen
+    QPushButton *loadButton;
+    //um die Anwendung zu beenden & das Widget zu schließen
+    QPushButton *endButton;
+    //Label für die Punkteanzeige
     QLabel *gamePoints;
 
 private slots:
-    void startStop(void);
-    void saveGame(void);
-    void loadGame(void);
+    //Funktionen, um Spiel zu steuern
+
+    //Spiel starten & pausieren
+    void startStopGame(void);
+    //Spiel speichern
+    void saveGame();
+    //Spiel laden
+    void loadGame();
 };
 
 #endif // GAMEWIDGET_H
