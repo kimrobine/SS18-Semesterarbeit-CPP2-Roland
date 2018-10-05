@@ -28,7 +28,7 @@ gameWidget::gameWidget(QWidget *parent) : QWidget(parent)
     loadButton->setFont(QFont("Times", 20, QFont::Bold));
     connect(loadButton, SIGNAL(clicked()), this, SLOT(loadGame()));
 
-    /* Ende-Button: Anwendung beendet, Widget schließen */
+    /* Ende-Button: Anwendung beenden, Widget schließen */
     endButton = new QPushButton(tr("Ende"));
     endButton->setFont(QFont("Times", 20, QFont::Bold));
     connect(endButton, SIGNAL(clicked()), qApp, SLOT(quit()));

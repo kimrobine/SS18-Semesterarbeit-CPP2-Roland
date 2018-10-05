@@ -6,7 +6,7 @@
 /* Konstruktor der Klasse element */
 element::element()
 {
-    //rufe die Funktion newElement auf
+    //rufe die Methode newElement auf
     newElement();
 
 }
@@ -19,22 +19,27 @@ void element::newElement() {
     //generiere 100 unterschiedliche Werte von 0 bis 99
     int zufall = rand() % 100;
 
-    //der Kreis soll mit 10% Wahrscheinlichkeit generiert werden
+    //der Kreis (elementType = 5) soll mit 10% Wahrscheinlichkeit generiert werden
     if (zufall < wahrscheinlichkeit) {
         elementType = 5;
-        //ansonsten sollen andere Elemente zufällig erzeugt werden
-    } else {
+
+    }
+    //ansonsten sollen andere Elemente zufällig erzeugt werden
+    else {
         //generiere 5 unterschiedliche Werte von 0 bis 4
         //des elementType
         elementType = rand() % 5;
     }
 
     //generiere beliebige Position auf der x-Achse
-    //zwischen 0 und 499
+    //zwischen 0 und 669
     int xPosition = rand() % 670;
 
-    //Aufrug der setElement-Methode, um Gegner-Elemente zu erzeugen
-    //Initalisierung mit y= -100, damit Elemente nicht angezeigt werden
+    //Aufruf der setElement-Methode, um Gegner-Elemente an beliebiger
+    //X-Position, überhalb des Spielfeldes und mit einem zufälligen Typ
+    //zu erzeugen. Initalisierung mit y= -200, damit Elemente bei Spielstart nicht
+    //angezeigt werden und erst durch die moveElement-Methode
+    //'ins Spiel fallen'
     setElement(xPosition, -200, elementType);
 
 }
@@ -43,10 +48,11 @@ void element::newElement() {
 void element::moveElement() {
 
     //Bewege das Element (immer vom Typ QRectF)
-    //um 0, also gar nicht, auf der X-Achse
-    //um einen beliebigen Wert (wird in new Element generiert) auf der Y-Achse
+    //auf der X-Achse: um 0, also gar nicht
+    //auf der Y-Achse: um einen beliebigen Wert (wird in newElement generiert)
     rect.translate(0,yMovement);
 
+    //über diese Methode wird 'Fallen' der Gegnerelemente erzeugt
 }
 
 /* Legt Form, Farbe und Geschwindigkeit der einzelnen Elemente fest */
@@ -75,7 +81,7 @@ void element::setElement (int x, int y, int type) {
     //roter Kreis für Leben addieren
     elements.push_back(QRectF (x, y, 30, 30));
 
-    //Festelgung der Farben
+    //Festlegung der Farben
     //definiere eine Liste elementeFarbe vom Typ QColor
     //und speichere darin 5 QColor-Elemente
     //mit jeweils einer bestimmten Farbe
@@ -89,6 +95,12 @@ void element::setElement (int x, int y, int type) {
     elementColor.push_back(QColor("#3D828F"));
     elementColor.push_back(QColor(Qt::red));
 
+    //Festlegung der Pen-Farbe
+    //definiere eine Liste elementPen vom Typ QPen
+    //und speichere darin 5 QPen-Elemente
+    //mit jeweils einem bestimmten Pen-Farbe
+    //wichtig: gleiche Reihenfolge wie vector elemente
+    //damit BrushStyles wie gewollt & gleich zugewiesen werden
     std::vector <QPen> elementPen;
     elementPen.push_back(QPen("#7A4948"));
     elementPen.push_back(QPen("#AD94AB"));
@@ -97,6 +109,11 @@ void element::setElement (int x, int y, int type) {
     elementPen.push_back(QPen("#3D828F"));
     elementPen.push_back(QPen("#000000"));
 
+    //Festlegung der Pen-Breite
+    //definiere eine Liste elementPen vom Typ int
+    //und speichere darin 5 int-Elemente
+    //mit jeweils einem bestimmten Zahlenwert
+    //für die Breite der Außenlinie eines Objektes
     std::vector <int> elementPenWidth;
     elementPenWidth.push_back(4);
     elementPenWidth.push_back(4);
@@ -105,7 +122,7 @@ void element::setElement (int x, int y, int type) {
     elementPenWidth.push_back(4);
     elementPenWidth.push_back(1);
 
-    //Festelgung des BrushStyle
+    //Festlegung des BrushStyle
     //definiere eine Liste elementeFarbe vom Typ Qt::BrushStyle
     //und speichere darin 5 Qt::BrushStyle-Elemente
     //mit jeweils einem bestimmten Pattern
@@ -141,8 +158,8 @@ void element::setElement (int x, int y, int type) {
     fallingRate.push_back(12);
 
     //generiere ein beliebiges der 5 definierten Elemente
-    //durch Aufrufen der Listen mit zuvor in newElement
-    //beliebigen generiertem Wert von elementType
+    //durch Aufrufen der Listen mit dem zuvor in newElement
+    //beliebig generiertem Wert von elementType
     rect = QRectF (elements[elementType]);
     yMovement = fallingRate[elementType];
     color = QColor (elementColor[elementType]);

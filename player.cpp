@@ -5,8 +5,9 @@
 #include "gamearea.h"
 #include "player.h"
 
-/* Konstruktor & Definition der Starteinstellungen */
+/* Konstruktor & Definition der Startwerte des Spielers */
 player::player(QWidget *parent) : QWidget(parent) {
+    //Initalisierung der Spielereigenschaften
     //Anfangs-X-Korrdinate des Spielers
     setPlayerX(350);
     //Anfangs-Y-Korrdinate des Spielers
@@ -19,25 +20,26 @@ player::player(QWidget *parent) : QWidget(parent) {
     setPlayerHeight(40);
     //wird für keyPressEvent/Ausführung der Bewegung benötigt
     setFocusPolicy(Qt::StrongFocus);
+    //initalisiere die Darstellung des Players mit vollen Leben
+    playerStyle = 0;
 }
 
-/* Definition der player-Bewegung */
+/* Definition der Spieler-Bewegung */
 void player::movePlayer(Movement::playerMovement status) {
 
     switch (status) {
     //im Fall playerGoesLeft, also Spieler soll sich nach links bewegen
     case playerGoesLeft:
-        //setze X-Position des Players auf Ergebnis
-        //der Subtraktion von aktuellem X-Wert mit Schrittweite PlayerMove
+        //setze X-Position des Spielers auf Ergebnis der Subtraktion
+        //von aktuellem X-Wert mit Schrittweite PlayerMove
         setPlayerX(getPlayerX() - getPlayerMove());
         break;
         //im Fall playerGoesRight, also Spieler soll sich nach rechts bewegen
     case playerGoesRight:
-        //setze X-Position des Players auf Ergebnis
-        //der Addition von aktuellem X-Wert mit Schrittweite PlayerMove
+        //setze X-Position des Spielers auf Ergebnis der Addition
+        //von aktuellem X-Wert mit Schrittweite PlayerMove
         setPlayerX(getPlayerX() + getPlayerMove());
         break;
-        //Standard: führe nichts aus
     default:
         break;
     }
@@ -61,17 +63,53 @@ Qt::BrushStyle player::getPlayerPattern() {
     return playerPattern;
 }
 
-/* Den Spieler ins Spielfeld malen */
+/* Methode, um Darstellung des Spielers abhängig von seiner Anzahl an Leben zu verändern */
+void player::setPlayerStyle(int pStyle) {
+
+    //bestimmter Style des Spielers (0-2) wird dieser Funktion übergeben
+    //und playerStyle wird auf gleichen Wert gesetzt
+    playerStyle = pStyle;
+
+    //'gesunde' Darstellung des Spielers bei vollen Leben
+    if (pStyle==0) {
+        setPlayerColor("#0000FF");
+        setPlayerPattern(Qt::BDiagPattern);
+    }
+
+    //abgeschwächte Darstellung des Spielers Stufe 1:
+    //mittelblau und gepunktet
+    if (pStyle==1) {
+        setPlayerColor("#0066FF");
+        setPlayerPattern(Qt::Dense6Pattern);
+    }
+
+    //abgeschwächte Darstellung des Spielers Stufe 2:
+    //sehr helles blau, leerer Rahmen
+    if (pStyle==2) {
+        setPlayerColor("#CCF5FF");
+        setPlayerPattern(Qt::NoBrush);
+    }
+}
+
+/* Get-Methode für Darstellung des Spielers */
+int player::getPlayerStyle () {
+    return playerStyle;
+}
+
+
+/* Anweisungen für das Zeichnen des Spielers */
 void player::paintEvent(QPaintEvent *event) {
 
     Q_UNUSED(event);
-    //definiere den Painter & beginne zu zeichnen
+    //erstelle den Painter & beginne zu zeichnen
     QPainter painter;
     painter.begin(this);
     //definiere ein Rechteck mit den zuvor im Konstruktor definierten Koordinaten
     QRectF rectangle(getPlayerX(), getPlayerY(), getPlayerWidth(), getPlayerHeight());
 
-    QBrush playerBrush (getPlayerColor(), playerPattern);
+    //setze die Farbe des Spielers und sein Muster
+    //mithilfe der dafür definierten Methoden
+    QBrush playerBrush (getPlayerColor(), getPlayerPattern());
     painter.setBrush(playerBrush);
     //zeichne eine Aussenlinie um das Rechteck
     //in der Farbe des Spielers
@@ -80,10 +118,12 @@ void player::paintEvent(QPaintEvent *event) {
     playerPen.setWidth(3);
     painter.setPen(playerPen);
 
-    //zeichne ein Rechteck mit den Definitionen aus rectangle
+    //zeichne ein Rechteck mit den erhaltenen Werten der Methoden
+    //aus der Definition des rectangle
     painter.drawRect(rectangle);
     painter.end();
 }
+
 
 /* Defintion der Aktion bei Drücken der Pfeiltasten */
 void player::keyPressEvent(QKeyEvent *keyEvent)
@@ -91,12 +131,12 @@ void player::keyPressEvent(QKeyEvent *keyEvent)
     switch (keyEvent->key()) {
     //wenn die linke Pfeiltaste gedrückt wird
     case Qt::Key_Left:
-        //führe Funktion move mit Status playerGoesLeft aus
+        //führe Funktion movePlayer mit Status playerGoesLeft aus
         movePlayer(playerGoesLeft);
         break;
         //wenn die rechte Pfeiltaste gedrückt wird
     case Qt::Key_Right:
-        //führe Funktion move mit Status playerGoesRight aus
+        //führe Funktion movePlayer mit Status playerGoesRight aus
         movePlayer(playerGoesRight);
         break;
         //für alle anderen KeyPressEvents: führe nichts aus
@@ -106,12 +146,14 @@ void player::keyPressEvent(QKeyEvent *keyEvent)
 
 }
 
-/* Defintion der Set- und Get-Methoden für die Position des players */
+/* Defintion der Set- und Get-Methoden für die Position des Spielers */
+
 void player::setPlayerX(int pX)
 {
     playerX = pX;
 
-    /*Spieler-Rect soll sich nur innerhalb der gameArea bewegen*/
+    /* Spieler soll sich nur innerhalb der gameArea bewegen
+     * und nicht darüber hinaus */
 
     //Bewegung nach links
     //wenn X-Koordinate des Spielers kleiner oder gleich 3
@@ -175,6 +217,8 @@ int player::getPlayerHeight() const
 {
     return playerHeight;
 }
+
+/* Ende Defintion der Set- und Get-Methoden für die Position des Spielers */
 
 //Dekonstruktor der Klasse Movement
 Movement::~Movement()

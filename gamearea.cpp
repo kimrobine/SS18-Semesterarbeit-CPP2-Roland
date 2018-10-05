@@ -6,31 +6,31 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QDebug>
+#include <iostream>
 
 #include "gamewidget.h"
 #include "gamearea.h"
 #include "ui_gamearea.h"
 #include "player.h"
-#include <iostream>
 
-
-/* Konstruktor der gameArea */
+/* Konstruktor der gameArea:
+ * Initialisierung des Anfangszustandes des Spiels
+ * und seiner Elemente */
 gameArea::gameArea(QWidget *parent) : QMainWindow(parent),
     ui(new Ui::gameArea)
 {
+    //setze den Namespace
     ui->setupUi(this);
 
     //Initalisierung des Spielers
     //erstelle den Player in der gameArea
-    playerRect = new player(this);
+    gamePlayer = new player(this);
     //an der momentanen X-Position
-    playerRect->getPlayerX();
-    //in blauer Farbe
-    playerRect->setPlayerColor("#0000FF");
-    //und schraffiert
-    playerRect->setPlayerPattern(Qt::BDiagPattern);
-    //setze in ins Zentrum des Widget-Fensters
-    setCentralWidget(playerRect);
+    gamePlayer->getPlayerX();
+    //und mit der Darstellung bei vollen Leben
+    gamePlayer->setPlayerStyle(0);
+    //setze ihn ins Zentrum des Widget-Fensters
+    setCentralWidget(gamePlayer);
 
     //initalisiere den Spielzustand als inaktiv
     setRunning(false);
@@ -55,7 +55,7 @@ gameArea::gameArea(QWidget *parent) : QMainWindow(parent),
     connect(timer, SIGNAL(timeout()), this, SLOT(updateGame()));
     //starte den Timer
     timer->start(1000/30);
-    //erzeuge unterschiedliche Anfangszustände
+    //erzeuge unterschiedliche Anfangszustände der Time-Instanz
     //damit unterschiedliche Gegner erzeugt werden
     srand(time(0));
 
@@ -72,10 +72,10 @@ gameArea::gameArea(QWidget *parent) : QMainWindow(parent),
 /* Aktualsierung des Spiels und seiner Zustände */
 void gameArea::updateGame()
 {
-    //wenn das Programm läuft
+    //wenn das Spiel läuft
     if(running){
 
-        //sollen Punkte jeweils um 1 ansteigen
+        //sollen die Punkte jeweils um 1 ansteigen,
         gamePoints += 1;
         //das Widget geupdatet werden
         update();
@@ -94,33 +94,38 @@ void gameArea::updateGame()
         if (getroffenTimer >= getroffenTimeout) {
             //ist der Spieler nicht mehr getroffen
             getroffen=false;
-            //und somit wieder unverwundbar
+            //und somit unverwundbar (startet unverwundbarTimer)
             unverwundbar = true;
-            //das Spiel geht weiter
-            setRunning(true);
-            //der Timer wird wieder auf Null gesetzt
+            //der getroffenTimer wird wieder auf Null gesetzt
             getroffenTimer=0;
+            //und das Spiel geht weiter
+            setRunning(true);
         }
     }
 
     //wenn das Spiel vorbei ist, also bei gameOver=true
-    //(tritt beim Schneiden zweier Elemente und leben==0 ein)
-    //sie drawEnemies-Funktion
+    //(tritt beim Schneiden zweier Elemente und leben==0 ein, siehe drawEnemies-Funktion)
     if (gameOver) {
-        //starte den Timer für das Timeout nachdem er getroffen ist
+        //starte den Timer für das gameOver-Timeout
         gameOverTimer++;
 
-        //wenn der Timer größer oder gleich dem vordefiniereten Timeout (100) für das Spielende ist
+        //wenn der Timer größer oder gleich dem vordefiniereten Timeout (120) für das Spielende ist
         if (gameOverTimer >= gameOverTimeout) {
             //setze den Timer auf 0
             gameOverTimer=0;
             //das Spiel ist nicht mehr vorbei
             gameOver=false;
-            //entferne gameOver-Text & Punktezahl
+            //entferne den gameOverScreen: Texte & Punktezahl
             delete gOText;
             delete gOText2;
             delete gOPoints;
-            //nach dem Timeout beginnt das Spiel wieder
+            //die Leben & Spieler-Darstellung werden erst nach dem Ende des Timers
+            //zurückgesetzt, damit während des gameOver-Timeouts Lebensanzeige leer ist
+            //und Spieler abgeschwächt dargestellt bleibt
+            leben = 3;
+            //Spielerdarstellung auf Darstellung bei vollen Leben zurücksetzen
+            gamePlayer->setPlayerStyle(0);
+            //nach dem gameOverTimeout beginnt das Spiel wieder
             setRunning(true);
         }
     }
@@ -131,86 +136,80 @@ void gameArea::updateGame()
 /* Lebensanzeige */
 void gameArea::drawLives(QPainter &painter) {
 
-    //Definition von 3 QRectF-Typ-Objekten
-    //mit Koordinaten xPos,yPos und Größe width,height
-    QRectF live3(670,20,30,30),live2(600,20,30,30),live1(635,20,30,30);
+    //Definition von 3 QRectF-Objekten
+    //mit Koordinaten (X,Y) und Abmessungen (Breite,Höhe)
+    QRectF live1(600,20,30,30),live2(635,20,30,30),live3(670,20,30,30);
 
-    //Füllung der Objekte bei vorhandenem Leben
+    //Füllung des Lebens-Objekts bei vorhandenem Leben
     QBrush liveFull (Qt::red);
     //Keine Füllung bei Verlust des Lebens
     Qt::BrushStyle liveLost = Qt::NoBrush;
 
-    /*
-    QPen livesPen (Qt::black);
-    livesPen.setWidth(1);
-    painter.setPen(livesPen);
-    */
-
     //Bei voller Lebensanzahl
     if (leben == 3) {
         //Zeichne alle drei Leben ausgefüllt
-        painter.drawEllipse(live3);
-        painter.setBrush(liveFull);
-        painter.drawEllipse(live2);
         painter.setBrush(liveFull);
         painter.drawEllipse(live1);
-        painter.setBrush(liveFull);
-
+        painter.drawEllipse(live2);
+        painter.drawEllipse(live3);
     }
+
     //Bei Verlust des 1. Lebens:
     if (leben ==2) {
-        painter.drawEllipse(live3);
+        //Zeichne das erste Leben als leeren Rahmen
+        painter.setBrush(liveLost);
+        painter.drawEllipse(live1);
         painter.setBrush(liveFull);
         painter.drawEllipse(live2);
-        painter.setBrush(liveFull);
-        //Zeichne dieses Leben als leeren Rahmen
-        painter.drawEllipse(live1);
-        painter.setBrush(liveLost);
+        painter.drawEllipse(live3);
     }
+
     //Bei Verlust des 2. Lebens:
     if (leben ==1) {
-        painter.drawEllipse(live3);
-        painter.setBrush(liveFull);
-        //Zeichne das 2. Lebens als leeren Rahmen
-        painter.drawEllipse(live2);
-        painter.setBrush(liveLost);
         //Zeichne das 1. Leben als leeren Rahmen
-        painter.drawEllipse(live1);
+        //Zeichne das 2. Leben als leeren Rahmen
         painter.setBrush(liveLost);
+        painter.drawEllipse(live1);
+        painter.drawEllipse(live2);
+        painter.setBrush(liveFull);
+        painter.drawEllipse(live3);
     }
+
     //Bei Verlust aller Leben:
     if (leben == 0) {
         //Zeichne alle Leben als leeren Rahmen
-        painter.drawEllipse(live3);
-        painter.setBrush(liveLost);
-        painter.drawEllipse(live2);
         painter.setBrush(liveLost);
         painter.drawEllipse(live1);
-        painter.setBrush(liveLost);
+        painter.drawEllipse(live2);
+        painter.drawEllipse(live3);
     }
 }
 
 /* Methode, um Darstellung des Spielers abhängig von seiner Anzahl an Leben zu verändern */
 void gameArea::changePlayerStyle() {
 
-    //'gesunde' Darstellung des Spielers bei vollen Leben
+    //bei vollen Leben
     if (leben==3) {
-        playerRect->setPlayerColor("#0000FF");
-        playerRect->setPlayerPattern(Qt::BDiagPattern);
+        //Nutzung der player-class Methode setPlayerStyle
+        //und übergeben des Zahlenwertes zur Bestimmung des Style-Typs
+        //0 = anfängliche, 'gesunde' Darstellung des Spielers
+        gamePlayer->setPlayerStyle(0);
     }
 
-    //abgeschwächte Darstellung des Spielers Stufe 1
-    //mittelblau und gepunktet
+    //bei Verlust eines Lebens
     if (leben==2) {
-        playerRect->setPlayerColor("#0066FF");
-        playerRect->setPlayerPattern(Qt::Dense6Pattern);
+        //setze den PlayerStyle auf
+        //die abgeschwächte Darstellung des Spielers Stufe 1
+        //mittelblau und gepunktet
+        gamePlayer->setPlayerStyle(1);
     }
 
-    //abgeschwächte Darstellung des Spielers Stufe 2
-    //sehr helles blau, leerer Rahmen
+    //bei Verlust des zweiten Lebens
     if (leben==1) {
-        playerRect->setPlayerColor("#CCF5FF");
-        playerRect->setPlayerPattern(Qt::NoBrush);
+        //setze den PlayerStyle auf
+        //die abgeschwächte Darstellung des Spielers Stufe 2
+        //sehr helles blau, leerer Rahmen
+        gamePlayer->setPlayerStyle(2);
     }
 }
 
@@ -274,7 +273,7 @@ void gameArea::drawEnemies(QPainter &painter)
         //Definition eines neuen QRectF-Elements
         //--> wird benötigt für Kollisionsabfrage mit intersects();-Methode
         //Gleichsetzung mit playerRect
-        QRectF player(playerRect->getPlayerX(),playerRect->getPlayerY(),playerRect->getPlayerWidth(), playerRect->getPlayerHeight());
+        QRectF player(gamePlayer->getPlayerX(),gamePlayer->getPlayerY(),gamePlayer->getPlayerWidth(), gamePlayer->getPlayerHeight());
 
         //Definition eines neuen QRectF-Elements
         //als Verwaltungselement für enemies
@@ -428,13 +427,8 @@ void gameArea::gameIsOver() {
 
     /* --- Ende Defintion der gameOver-Anzeige --- */
 
-    //die Punkte & Leben werden zurückgesetzt
+    //die Punkte werden zurückgesetzt
     gamePoints = 0;
-    leben = 3;
-
-    //Spielerdarstellung auf Darstellung bei vollen Leben zurücksetzen
-    playerRect->setPlayerColor("#0000FF");
-    playerRect->setPlayerPattern(Qt::BDiagPattern);
 
     //Lösche die aktuellen Gegener
     //und generiere neue Gegener
@@ -442,6 +436,8 @@ void gameArea::gameIsOver() {
         e->newElement();
     }
 
+    //Zurücksetzung der Leben & Spieler-Darstellung
+    //--> siehe updateGame()-Methode, if (gameOver)-Bedingung
 }
 
 
@@ -477,8 +473,10 @@ void gameArea::serialize(QFile &file)
     //exportiere die Daten mit out in die Datei
     QTextStream out(&file);
 
-    //speichere die momentane X-Koordinate des Spielers (playerRect)
-    out << playerRect->getPlayerX() << endl;
+    //speichere die momentane X-Koordinate des Spielers
+    out << gamePlayer->getPlayerX() << endl;
+    //speichere die momentane optische Darstellung (Farbe & Muster) des Spielers
+    out << gamePlayer->getPlayerStyle() << endl;
 
     //für jedes Objekt des Vektors enemies auf Basis der Klasse element
     for (element *e:enemies) {
@@ -510,11 +508,20 @@ void gameArea::deserialize(QFile &file)
     //setze die X-Position des Spielers auf den Wert der ersten Zeile
     //nachdem du die erste Zeile in eine int-Variable (Zahlenwert)
     //umgewandelt hast
-    playerRect->setPlayerX(zeile.toInt());
+    gamePlayer->setPlayerX(zeile.toInt());
+
+    //lies die nächste Zeile
+    zeile = in.readLine();
+    //setze den Style des Spielers auf den Wert dieser Zeile
+    //nachdem du die Zeile in eine int-Variable (Zahlenwert)
+    //umgewandelt hast
+    gamePlayer->setPlayerStyle(zeile.toInt());
+
 
     //für jedes Objekt des Vektors enemies auf Basis der Klasse element
     for (element *e:enemies) {
 
+        //lies die nächste Zeile
         zeile = in.readLine();
         //Teile jede Zeile in 3 Teile anhand des Kommas und erstelle eine Liste
         QStringList liste = zeile.split(",");
@@ -532,11 +539,16 @@ void gameArea::deserialize(QFile &file)
 
     }
 
+    //lies die nächste Zeile
     zeile = in.readLine();
     //setze den Punktestand des Spielers auf den Wert der Zeile
     //nachdem sie in eine int-Variable (Zahlenwert) umgewandelt wurde
     gamePoints = zeile.toInt();
+    //Punkteanzeige soll nach dem Laden direkt verändert werden und
+    //die gespeicherte Punktzahl anzeigen
+    gamePointsLabel->setText(QString::number(gamePoints) + " Punkte");
 
+    //lies die nächste Zeile
     zeile = in.readLine();
     //setze die Leben des Spielers auf den Wert der Zeile
     //nachdem sie in eine int-Variable (Zahlenwert) umgewandelt wurde
