@@ -7,8 +7,8 @@
 #include "gamearea.h"
 #include "player.h"
 
-/* Die Klasse gameWidget erstellt das Spielfenster, die Buttons und ihre verknüpften Funktionen
- * sowie den Punkte-Counter und intialisiert das Zeichenfeld, in dem das Spiel stattfindet (gameArea)
+/* Die Klasse gameWidget erstellt das Spielfenster, die Buttons und ihre verknüpften Funktionen,
+ * den Punkte-Counter und intialisiert das Zeichenfeld, in dem das Spiel stattfindet (gameArea)
  * auf Basis der Klasse gameArea
  */
 
@@ -40,7 +40,7 @@ private:
     //Label für die Punkteanzeige
     QLabel *gamePoints;
 
-private slots:
+private slots:   
     //Funktionen, um Spiel zu steuern
 
     //Spiel starten & pausieren
