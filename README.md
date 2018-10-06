@@ -5,7 +5,7 @@ Semesterarbeit von Kim Roland im BM3-Modul Softwaretechnologie, Seminar "Objekto
 Im Rahmen dieser Semesterarbeit wurden die Stufen IV, III und II der Aufgabenstellung erfolgreich realisiert.
 
 ### Projekt herunterladen
-- Projekt-Masterdatei als ZIP-Ordner herunterladen und entpacken
+- Projekt-Masterversion aus diesem Repository als ZIP-Ordner herunterladen und entpacken
 - .pro-Datei des Projektes (SS18-Semesterarbeit-CPP2-Roland.pro) mit QT öffnen und konfigurieren
 - Ausführen (Kompilieren erfolgreich getestet mit folgenden Programmversionen: Qt 5.9.2 (Clang 7.0 (Apple), 64 bit) und Qt Creator 4.4.1)
 - Spielwidget öffnet sich
