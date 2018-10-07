@@ -2,7 +2,7 @@
 Semesterarbeit von Kim Roland im BM3-Modul Softwaretechnologie, Seminar "Objektorientierte Programmierung: C++-Programmieren-2"
 
 # Dokumentation
-Im Rahmen dieser Semesterarbeit wurden die Stufen IV, III und II der Aufgabenstellung erfolgreich realisiert.
+Im Rahmen dieser Semesterarbeit wurden die Stufen I, II und III der Aufgabenstellung erfolgreich realisiert.
 
 ### Projekt herunterladen
 - Projekt-Masterversion aus diesem Repository als ZIP-Ordner herunterladen und entpacken
