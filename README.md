@@ -7,7 +7,7 @@ Im Rahmen dieser Semesterarbeit wurden die Stufen I, II und III der Aufgabenstel
 ### Projekt herunterladen
 - Projekt-Masterversion aus diesem Repository als ZIP-Ordner herunterladen und entpacken
 - .pro-Datei des Projektes (*SS18-Semesterarbeit-CPP2-Roland.pro*) mit QT öffnen und konfigurieren
-- Ausführen (Kompilieren erfolgreich getestet mit folgenden Programmversionen: *Qt 5.9.2 (Clang 7.0 (Apple), 64 bit)* und *Qt Creator 4.4.1*)
+- Ausführen (Kompilieren erfolgreich getestet auf Mac und Windows mit folgenden Programmversionen: *Qt 5.9.2 (Clang 7.0 (Apple), 64 bit)* und *Qt Creator 4.4.1* bzw. *Qt 5.10.1 (MSVC 2015, 32 bit)* und *Qt Creator 4.6.0*)
 - Spielwidget öffnet sich
 
 ### Spielfunktionen
