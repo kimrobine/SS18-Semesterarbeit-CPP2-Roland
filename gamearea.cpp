@@ -52,6 +52,7 @@ gameArea::gameArea(QWidget *parent) : QMainWindow(parent),
 
     //erstelle den Timer
     timer = new QTimer(this);
+    //verknüpfe ihn mit der updateGame()-Methode
     connect(timer, SIGNAL(timeout()), this, SLOT(updateGame()));
     //starte den Timer
     timer->start(1000/30);
@@ -85,6 +86,22 @@ void gameArea::updateGame()
 
     }
 
+    //wenn der Spieler gerade getroffen wurde
+    //also unverwundbar = true ist
+    if (unverwundbar) {
+
+        //starte den Timer für die Zeit der Unverwundbarkeit
+        unverwundbarTimer++;
+
+        //wenn der Timer größer oder gleich dem vordefiniereten Timeout (30) der Unverwundbarkeit ist
+        if (unverwundbarTimer >= unverwundbarTimeout) {
+            //setze den Timer wieder auf 0
+            unverwundbarTimer=0;
+            //und der Spieler ist wieder verwundbar
+            unverwundbar = false;
+        }
+    }
+
     //wenn der Spieler getroffen wurde
     if (getroffen) {
         //starte den Timer für das Timeout nachdem er getroffen ist
@@ -104,7 +121,7 @@ void gameArea::updateGame()
     }
 
     //wenn das Spiel vorbei ist, also bei gameOver=true
-    //(tritt beim Schneiden zweier Elemente und leben==0 ein, siehe drawEnemies-Funktion)
+    //(tritt beim Schneiden zweier Elemente und leben==0 ein, siehe drawEnemies()-Methode)
     if (gameOver) {
         //starte den Timer für das gameOver-Timeout
         gameOverTimer++;
@@ -119,12 +136,14 @@ void gameArea::updateGame()
             delete gOText;
             delete gOText2;
             delete gOPoints;
-            //die Leben & Spieler-Darstellung werden erst nach dem Ende des Timers
-            //zurückgesetzt, damit während des gameOver-Timeouts Lebensanzeige leer ist
-            //und Spieler abgeschwächt dargestellt bleibt
+            //Leben zurücksetzen
             leben = 3;
             //Spielerdarstellung auf Darstellung bei vollen Leben zurücksetzen
             gamePlayer->setPlayerStyle(0);
+            //Leben & Spieler-Darstellung werden erst nach dem Timeout
+            //zurückgesetzt, damit während dessen Lebensanzeige leer ist
+            //und Spieler abgeschwächt dargestellt bleibt
+
             //nach dem gameOverTimeout beginnt das Spiel wieder
             setRunning(true);
         }
@@ -138,12 +157,17 @@ void gameArea::drawLives(QPainter &painter) {
 
     //Definition von 3 QRectF-Objekten
     //mit Koordinaten (X,Y) und Abmessungen (Breite,Höhe)
-    QRectF live1(600,20,30,30),live2(635,20,30,30),live3(670,20,30,30);
+    QRectF live1(570,20,30,30),live2(605,20,30,30),live3(640,20,30,30);
 
     //Füllung des Lebens-Objekts bei vorhandenem Leben
     QBrush liveFull (Qt::red);
     //Keine Füllung bei Verlust des Lebens
     Qt::BrushStyle liveLost = Qt::NoBrush;
+
+    //Definition der Außenlinie
+    QPen livesPen (Qt::red);
+    livesPen.setWidth(2);
+    painter.setPen(livesPen);
 
     //Bei voller Lebensanzahl
     if (leben == 3) {
@@ -156,9 +180,10 @@ void gameArea::drawLives(QPainter &painter) {
 
     //Bei Verlust des 1. Lebens:
     if (leben ==2) {
-        //Zeichne das erste Leben als leeren Rahmen
+        //Zeichne das 1. Leben als leeren Rahmen
         painter.setBrush(liveLost);
         painter.drawEllipse(live1);
+
         painter.setBrush(liveFull);
         painter.drawEllipse(live2);
         painter.drawEllipse(live3);
@@ -166,11 +191,11 @@ void gameArea::drawLives(QPainter &painter) {
 
     //Bei Verlust des 2. Lebens:
     if (leben ==1) {
-        //Zeichne das 1. Leben als leeren Rahmen
-        //Zeichne das 2. Leben als leeren Rahmen
+        //Zeichne das 1. & 2. Leben als leeren Rahmen
         painter.setBrush(liveLost);
         painter.drawEllipse(live1);
         painter.drawEllipse(live2);
+
         painter.setBrush(liveFull);
         painter.drawEllipse(live3);
     }
@@ -190,8 +215,8 @@ void gameArea::changePlayerStyle() {
 
     //bei vollen Leben
     if (leben==3) {
-        //Nutzung der player-class Methode setPlayerStyle
-        //und übergeben des Zahlenwertes zur Bestimmung des Style-Typs
+        //Nutzung der class player-Methode setPlayerStyle()
+        //Übergabe des Zahlenwertes zur Bestimmung des Style-Typs
         //0 = anfängliche, 'gesunde' Darstellung des Spielers
         gamePlayer->setPlayerStyle(0);
     }
@@ -208,7 +233,7 @@ void gameArea::changePlayerStyle() {
     if (leben==1) {
         //setze den PlayerStyle auf
         //die abgeschwächte Darstellung des Spielers Stufe 2
-        //sehr helles blau, leerer Rahmen
+        //helles blau, leerer Rahmen
         gamePlayer->setPlayerStyle(2);
     }
 }
@@ -223,72 +248,73 @@ void gameArea::drawEnemies(QPainter &painter)
     //Solange der vector enemies größer ist als Durchlaufvariable i
     for (int i = 0; i<enemies.size(); i++) {
 
-        //definiere Pointer-Objekt e
+        //definiere Pointer-Objekt e auf Basis der Klasse element
         //alle Elemente aus enemies an Stelle i lassen sich durch e verwalten
         element* e = enemies[i];
 
-        //definiere Brush für Verwendung
-        //elementabhängiger Farbe & Muster
+        //definiere Brush für Anwendung elementabhängiger Farbe & Muster
         QBrush enemyBrush (e->color,e->pattern);
         painter.setBrush(enemyBrush);
 
-        //definiere Pen für Verwendung
-        //elementabhängiger PenFarbe & PenDicke
+        //definiere Pen für Anwendung elementabhängiger PenFarbe & PenDicke
         QPen enemyPen (e->pen);
         enemyPen.setWidth(e->penWidth);
         painter.setPen(enemyPen);
 
-        //wechsle über dem elementTyp (aus der Klasse element)
+        //Wechsle über dem elementType der Gegnerelemente
+        //Zeichne die Gegnerelemente mit ihrer spezifischen
+        //Form anhand des elementType
         switch (e->elementType) {
-        //grünes Rechteck
+        //Rechteck
         case 0:
             painter.drawRect(e->rect);
             break;
-            //pinker Kreis
+        //lange Ellipse
         case 1:
             painter.drawEllipse(e->rect);
             break;
-            //gelbe Säule
+        //Säule
         case 2:
             painter.drawRect(e->rect);
             break;
-            //cyan Pie
+        //Dreieck (pie)
         case 3:
             //vom Typ rect, mit startAngle & spanAngle
             painter.drawPie(e->rect,60 * 16,60 * 16);
             break;
-            //dunkeltürkises rundes Rechteck
+        //rundes Rechteck
         case 4:
             //vom Typ rect, mit xRadius & yRadius
             painter.drawRoundedRect(e->rect, 25, 10);
             break;
+        //lebenaddierender roter Kreis
         case 5:
             painter.drawEllipse(e->rect);
             break;
         }
 
-        //Bewege alle Elemente in der Liste enemies
+        //Bewege alle Gegnerelemente
         e->moveElement();
 
         //Definition eines neuen QRectF-Elements
-        //--> wird benötigt für Kollisionsabfrage mit intersects();-Methode
-        //Gleichsetzung mit playerRect
+        //--> wird benötigt für Kollisionsabfrage mit intersects()-Methode
+        //Gleichsetzung mit Eigenschaften des gamePlayers
         QRectF player(gamePlayer->getPlayerX(),gamePlayer->getPlayerY(),gamePlayer->getPlayerWidth(), gamePlayer->getPlayerHeight());
 
         //Definition eines neuen QRectF-Elements
         //als Verwaltungselement für enemies
-        QRectF enemyRect (e->rect);
+        QRectF enemy (e->rect);
 
-        //türkises pie-Element soll auch intersecten
+        //türkises pie-Element soll auch mit gamePlayer intersecten
         //Breite und Höhe müssen reduziert werden
-        //da es sich sonst zu früh mit dem player schneidet
+        //da es sich sonst zu früh mit dem Spieler schneidet
         if (e->elementType == 3) {
-            enemyRect.setHeight(40);
-            enemyRect.setWidth(50);
+            enemy.setHeight(30);
+            enemy.setWidth(40);
         }
 
-        //wenn ein Element aus der Liste enemies mit dem Spieler kollidiert
-        if (enemyRect.intersects(player) && unverwundbar==false) {
+        //wenn ein Gegner mit dem Spieler kollidiert und der Spieler verwundbar ist
+        if (enemy.intersects(player) && unverwundbar==false) {
 
             //mache den Spieler unverwundbar (startet den unverwundbar-Timer)
             unverwundbar=true;
@@ -299,7 +325,7 @@ void gameArea::drawEnemies(QPainter &painter)
 
             /* --- Definition Aktion lebenregenerierender Kreis --- */
 
-            //wenn es sich bei dem elementType 5, also um den roten Kreis handelt
+            //wenn es sich bei dem elementType um den Wert 5, also um den roten Kreis handelt
             if (e->elementType==5) {
                 //und der Spieler nicht über alle Leben verfügt
                 if (leben!=3){
@@ -307,26 +333,28 @@ void gameArea::drawEnemies(QPainter &painter)
                     //statt eines zu entfernen
                     leben++;
 
-                    //sorge für Wiederherstellung der Darstellung des Players
+                    //sorge für verbesserte Darstellung des Spielers
                     changePlayerStyle();
 
                 }
-                //verfügt der Spieler über volle Leben
-                else {
+             //verfügt der Spieler über volle Leben
+             else {
                     //bleiben Leben unverändert
                     leben = 3;
                 }
+
+            /* --- Ende Definition Aktion lebenregenerierender Kreis --- */
+
             }
-            //bei jedem anderen enemy-Objekt
+
+            //bei der Kollision des Spielers mit jedem anderen Gegner
             else {
                 //ziehe ein Leben ab
                 leben--;
 
             }
 
-            /* --- Ende Definition Aktion lebenregenerierender Kreis --- */
-
-            //sorge für abgeschwächte Darstellung des Players
+            //sorge für abgeschwächte Darstellung des Spielers
             changePlayerStyle();
 
 
@@ -340,8 +368,8 @@ void gameArea::drawEnemies(QPainter &painter)
 
 
         //wenn das aktuelle Gegner-Rect die gameArea verlässt
-        //die Y-Koordinate also größer als 700 ist
-        if (e->rect.y() > 700) {
+        //die Y-Koordinate also größer als 670 ist
+        if (e->rect.y() > 670) {
             //erzeuge ein neues zufälliges Element
             e->newElement();
 
@@ -351,39 +379,23 @@ void gameArea::drawEnemies(QPainter &painter)
 }
 
 
-/* Paint-Methode, um Zeichnen-Methoden der Lebensanzeige & der fallende Objekte
- * auszulösen und Zustände der Unverwundbarkeit des Spielers zu regeln */
+/* Paint-Methode, um draw-Methoden der Lebensanzeige & der Gegner
+ * auszulösen */
 void gameArea::paintEvent(QPaintEvent * ){
+
     QPainter painter;
 
     painter.begin(this);
 
-    //solange Leben vorhanden sind
     for (int i =0; i <= leben; i++) {
         //rufe die Methode zum Zeichnen der Leben auf
         drawLives(painter);
     }
 
-    //wenn gameOver=false ist, das Spiel also aktiv ist
+    //wenn gameOver=false ist, das Spiel also aktiv und nicht zuende ist
     if (!gameOver){
         //rufe die Methode zum Zeichnen der fallenden Gegner-Objekte auf
         drawEnemies(painter);
-    }
-
-    //wenn der Spieler gerade getroffen wurde
-    //also unverwundbar = true ist
-    if (unverwundbar) {
-
-        //starte den Timer für die Zeit der Unverwundbarkeit
-        unverwundbarTimer++;
-
-        //wenn der Timer größer oder gleich dem vordefiniereten Timeout (30) der Unverwundbarkeit ist
-        if (unverwundbarTimer >= unverwundbarTimeout) {
-            //setze den Timer wieder auf 0
-            unverwundbarTimer=0;
-            //und der Spieler ist nicht mehr unverwundbar
-            unverwundbar = false;
-        }
     }
 
     painter.end();
@@ -403,7 +415,7 @@ void gameArea::gameIsOver() {
 
     //Defintion des Label-Textes
     gOText = new QLabel ("Game Over :(");
-    //Label soll child-Element des Widger sein
+    //Label soll child-Element des Widget sein
     gOText->setParent(this);
     //Festlegung der Schriftart & Schriftgröße
     gOText->setFont(QFont("Helvetica", 34));
@@ -413,6 +425,7 @@ void gameArea::gameIsOver() {
     //Labeltext anzeigen
     gOText->show();
 
+    //Defintion des Label-Textes und Verbindung mit Punkten
     gOPoints = new QLabel (QString("Erreichte Punkte: ").append(QString::number(gamePoints)));
     gOPoints->setParent(this);
     gOPoints->setFont(QFont("Helvetica", 26));
@@ -430,8 +443,8 @@ void gameArea::gameIsOver() {
     //die Punkte werden zurückgesetzt
     gamePoints = 0;
 
-    //Lösche die aktuellen Gegener
-    //und generiere neue Gegener
+    //Lösche die aktuellen Gegner
+    //und generiere neue Gegner
     for (element *e:enemies) {
         e->newElement();
     }
@@ -449,9 +462,9 @@ void gameArea::setRunning(bool run)
     running = run;
 
     //wenn das Spiel läuft
-    if (run) {
+    if (running) {
         //lege die Hintergrundfarbe auf dunkelgrau fest
-        setPalette(QPalette(QColor (70,70,70)));
+        setPalette(QPalette(QColor("#2E2E2E")));
         setAutoFillBackground(true);
 
     }
@@ -459,11 +472,10 @@ void gameArea::setRunning(bool run)
     //wenn Spiel nicht läuft
     else {
         //lege die Hintergrundfarbe auf hellgrau fest
-        setPalette(QPalette(QColor (190,190,190)));
+        setPalette(QPalette(QColor("#8A8A8A")));
         setAutoFillBackground(true);
     }
 }
-
 
 
 /* Festlegung der Aktion für die saveGame()-Funktion:
@@ -473,38 +485,53 @@ void gameArea::serialize(QFile &file)
     //exportiere die Daten mit out in die Datei
     QTextStream out(&file);
 
+    //speichere Überschrift; für Dateiabfrage beim Laden benötigt
+    out << "Gespeicherte Spielinformationen" << endl;
+
     //speichere die momentane X-Koordinate des Spielers
     out << gamePlayer->getPlayerX() << endl;
     //speichere die momentane optische Darstellung (Farbe & Muster) des Spielers
     out << gamePlayer->getPlayerStyle() << endl;
 
-    //für jedes Objekt des Vektors enemies auf Basis der Klasse element
+    //für jedes Element des Vektors enemies
     for (element *e:enemies) {
         //speichere die aktuelle y-Position
         out << e->rect.y() << ",";
-        //speichere die aktuelle y-Position
+        //speichere die aktuelle x-Position
         out << e->rect.x() << ",";
-        //speichere den elementType des Elements
+        //speichere den elementType
         out << e->elementType << endl;
     }
+
     //speichere den aktuellen Punktestand
     out << gamePoints << endl;
     //speichere die aktuelle Lebensanzahl
     out << leben;
 
     /* WICHTIG: Speicherung erfolgt chronologisch in hier definierter Reihenfolge
-     * Reihenfolge muss beim Laden demnach übereinstimmen !!! */
+     * Reihenfolge muss beim Laden übereinstimmen !!! */
 }
 
 /* Festlegung der Aktion für die loadGame()-Funktion:
  * Laden eines gespeicherten Spielstandes */
 void gameArea::deserialize(QFile &file)
 {
-    //lese die Datei ein
+    //lese die Datei über in
     QTextStream in(&file);
 
     //QString liest ganze Zeile und gibt sie als String zurück
     QString zeile = in.readLine();
+
+    //Abfrage, dass es sich um eine Datei mit Spielinformationen handelt
+    if (zeile != "Gespeicherte Spielinformationen")
+    {
+        QMessageBox::warning(this, tr("Formatfehler"),
+                             tr("Das ist keine Datei mit Spielinformationen."),QMessageBox::Ok);
+        return;
+    }
+
+    //lies die nächste Zeile
+    zeile = in.readLine();
     //setze die X-Position des Spielers auf den Wert der ersten Zeile
     //nachdem du die erste Zeile in eine int-Variable (Zahlenwert)
     //umgewandelt hast
@@ -518,7 +545,7 @@ void gameArea::deserialize(QFile &file)
     gamePlayer->setPlayerStyle(zeile.toInt());
 
 
-    //für jedes Objekt des Vektors enemies auf Basis der Klasse element
+    //für jedes Element des Vektors enemies
     for (element *e:enemies) {
 
         //lies die nächste Zeile
@@ -529,12 +556,12 @@ void gameArea::deserialize(QFile &file)
         QString y = liste[0];
         //zweiter Teil der Liste: X-Position des Elements
         QString x = liste[1];
-        //dritter Teil der Liste: Elementtyp
+        //dritter Teil der Liste: Element-Typ
         QString typ = liste[2];
 
-        //rufe für jedes Enemies-Element die Funktion setElement() auf
-        //nutze so die aus der Datei ausgelesenen Werte, um die Gegnerelemente
-        //zu verändern
+        //rufe für jedes Gegner-Element die Methode setElement() auf
+        //übergebe die aus der Datei ausgelesenen und in Zahlen umgewandelte
+        //Werte, um Speicherzustand auf Gegnerelemente zu übertragen
         e->setElement(x.toInt(),y.toInt(),typ.toInt());
 
     }
@@ -555,6 +582,6 @@ void gameArea::deserialize(QFile &file)
     leben = zeile.toInt();
 
     //aktualisiere das Spiel, um den gespeicherten Spielstand
-    //zu laden
+    //anzuzeigen
     update();
 }

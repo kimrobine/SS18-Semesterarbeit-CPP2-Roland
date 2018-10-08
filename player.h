@@ -6,43 +6,39 @@
 
 #include "gamearea.h"
 
-/* Die Klasse player beinhaltet die nötigen Funktionen zur Erzeugung und Bewegung des Spieleravatars:
- * setter und getter für die Positions- und Schrittweitenfestlegung des Spielers,
- * setter und getter für die veränderte Darstellung des Spielers in Farbe und Füllmuster
- * paint- und keyPressEvent zur Zeichnung und Bewegungsfähigkeit in der gameArea
- * Die Klasse Movement dient als Hilfsklasse für die player-Klasse und definiert
- * die Bewegungen des Players in einem enum, um sie später in der movePlayer()-Funktion
- * verwenden zu können, und initalisiert die movePlayer()-Funktion der player-Klasse dynamisch,
- * mit dem enum und einem Ausgangswert
- * Player-Bewegung ist angelehnt an folgendes Beispiel:
- * https://www.badprog.com/c-qt-framework-moving-a-shape-with-arrow-keys
+/* Die Klasse player beinhaltet die nötigen Methoden zur Erzeugung und Bewegung des Spieleravatars:
+ * setter und getter für die Positions-, Größen- und Schrittweitenfestlegung sowie für die
+ * veränderte Darstellung in Farbe und Füllmuster; paint- und keyPressEvent zur Zeichnung und
+ * Bewegungsfähigkeit des Spielers in der gameArea.
+ * Die Klasse movement dient als Hilfsklasse für die player-Klasse und definiert die Bewegungen des
+ * Spielers in einem enum, um sie später in der movePlayer()-Methode verwenden zu können
+ * Player ist angelehnt an folgendes Beispiel: https://www.badprog.com/c-qt-framework-moving-a-shape-with-arrow-keys
  */
 
 /* Hilfsklasse für Bewegung des Spielers */
-class Movement {
+class movement {
 public:
-    //enumeration für switch-case der movePlayer-Methode
+    //enumeration für switch-case der movePlayer()-Methode
     enum playerMovement {
         playerGoesLeft,
         playerGoesRight
     };
 
 public:
+    //virtuell = dynamisch änderbar, nicht statisch
     //Dekonstruktor der Klasse Movement
-    virtual ~Movement();
-    //initalisierung der virtuellen movePlayer-Methode
-    //virtuell = Methode dynamisch änderbar, nicht statisch
+    virtual ~movement();
+    //Initalisierung der virtuellen movePlayer-Methode
     virtual void movePlayer(playerMovement) = 0;
 };
 
-/* Klasse für Generierung und Bewegung des Spielers */
-class player : public QWidget, public Movement
+/* Klasse für Erzeugung und Bewegung des Spielers */
+class player : public QWidget, public movement
 {
 public:
     //Konstruktor
     player(QWidget *parent = 0);
     //Methode für die links-rechts-Bewegung des Spielers
-    //basierend auf enum der Klasse Movement
     void movePlayer(playerMovement);
 
     /* Set- und Get-Methoden für die Position des Spielers */
@@ -55,15 +51,14 @@ public:
     int getPlayerMove() const;
     void getPlayerMove(int pMove);
 
-    /* Set- und Get-Methoden für die Breite und Höhe des
-     * Spielers */
+    /* Set- und Get-Methoden für Breite und Höhe des Spielers */
     void setPlayerWidth(int pWidth);
     int getPlayerWidth() const;
     void setPlayerHeight(int pHeight);
     int getPlayerHeight() const;
 
     /* Set- und Get-Methoden für wechselnde optische
-     * Darstellung des Spielers. Benötigt für Stufe II:
+     * Darstellung des Spielers. Benötigt für Stufe III:
      * abgeschwächte Darstellung bei Lebensverlust */
     void setPlayerColor(QColor c);
     QColor getPlayerColor();
@@ -77,6 +72,7 @@ protected:
     /* Methode für Auslösung der Bewegungsfunktion
      * über Pfeiltasten */
     void keyPressEvent(QKeyEvent *keyEvent);
+
     /* Paint-Methode zum Zeichnen des Spielers */
     void paintEvent(QPaintEvent *event);
 
@@ -89,9 +85,9 @@ private:
     int playerY;
     //Schrittweite der Bewegung
     int playerMove;
-    //Breite (des Spieler-Rechtecks)
+    //Breite des Spieler-Rechtecks
     int playerWidth;
-    //Höhe (des Spieler-Rechtecks)
+    //Höhe des Spieler-Rechtecks
     int playerHeight;
 
     //optische Darstellung des Spielers
