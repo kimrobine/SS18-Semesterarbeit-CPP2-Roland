@@ -11,10 +11,10 @@ int main(int argc, char *argv[])
     //Erzeuge ein Widget-Objekt w auf Basis der Klasse gameWidget
     gameWidget w;
     //Lege die Abmessungen des gameWidget fest
-    w.setGeometry(0 , 0, 900, 700);
+    w.setGeometry(0 , 0, 850, 600);
     //Setze sie auf eine feste Größe
     //sodass sich das Spielfenster nicht vergrößern/verkleinern lässt
-    w.setFixedSize(890,650);
+    w.setFixedSize(850,600);
     //Gebe dem Spielfenster einen Titel
     w.setWindowTitle("C++ Spiel von Kim Roland");
     //Sorge dafür, dass das Spielfenster auf allen Betriebssystemen

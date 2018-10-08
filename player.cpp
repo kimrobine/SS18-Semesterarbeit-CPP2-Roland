@@ -5,39 +5,43 @@
 #include "gamearea.h"
 #include "player.h"
 
-/* Konstruktor & Definition der Startwerte des Spielers */
+/* Konstruktor der Klasse player & Definition der Startwerte des Spielers */
 player::player(QWidget *parent) : QWidget(parent) {
+
     //Initalisierung der Spielereigenschaften
+
     //Anfangs-X-Korrdinate des Spielers
-    setPlayerX(350);
+    setPlayerX(330);
     //Anfangs-Y-Korrdinate des Spielers
-    setPlayerY(515);
+    setPlayerY(470);
     //Schrittweite der Bewegung
     getPlayerMove(30);
     //Breite des Spielerrechtecks
     setPlayerWidth(40);
     //Höhe des Spielerrechtecks
     setPlayerHeight(40);
+    //Darstellung des Players mit vollen Leben
+    playerStyle = 0;
+
     //wird für keyPressEvent/Ausführung der Bewegung benötigt
     setFocusPolicy(Qt::StrongFocus);
-    //initalisiere die Darstellung des Players mit vollen Leben
-    playerStyle = 0;
+
 }
 
 /* Definition der Spieler-Bewegung */
-void player::movePlayer(Movement::playerMovement status) {
+void player::movePlayer(movement::playerMovement status) {
 
     switch (status) {
     //im Fall playerGoesLeft, also Spieler soll sich nach links bewegen
     case playerGoesLeft:
         //setze X-Position des Spielers auf Ergebnis der Subtraktion
-        //von aktuellem X-Wert mit Schrittweite PlayerMove
+        //von aktuellem X-Wert mit Schrittweite playerMove
         setPlayerX(getPlayerX() - getPlayerMove());
         break;
         //im Fall playerGoesRight, also Spieler soll sich nach rechts bewegen
     case playerGoesRight:
         //setze X-Position des Spielers auf Ergebnis der Addition
-        //von aktuellem X-Wert mit Schrittweite PlayerMove
+        //von aktuellem X-Wert mit Schrittweite playerMove
         setPlayerX(getPlayerX() + getPlayerMove());
         break;
     default:
@@ -46,7 +50,7 @@ void player::movePlayer(Movement::playerMovement status) {
 
 }
 
-/* Defintion der Set- und Get-Methoden für die optische Darstellung des players */
+/* Defintion der Set- und Get-Methoden für die optische Darstellung des Spielers */
 void player::setPlayerColor (QColor c) {
     playerColor = c;
 }
@@ -66,27 +70,28 @@ Qt::BrushStyle player::getPlayerPattern() {
 /* Methode, um Darstellung des Spielers abhängig von seiner Anzahl an Leben zu verändern */
 void player::setPlayerStyle(int pStyle) {
 
-    //bestimmter Style des Spielers (0-2) wird dieser Funktion übergeben
+    //bestimmter Style des Spielers (0-2) wurde übergeben
     //und playerStyle wird auf gleichen Wert gesetzt
     playerStyle = pStyle;
 
-    //'gesunde' Darstellung des Spielers bei vollen Leben
-    if (pStyle==0) {
-        setPlayerColor("#0000FF");
+    //'gesunde' Darstellung des Spielers bei vollen Leben:
+    //voller Blauton, schraffiert
+    if (playerStyle==0) {
+        setPlayerColor("#005BE5");
         setPlayerPattern(Qt::BDiagPattern);
     }
 
     //abgeschwächte Darstellung des Spielers Stufe 1:
-    //mittelblau und gepunktet
-    if (pStyle==1) {
-        setPlayerColor("#0066FF");
-        setPlayerPattern(Qt::Dense6Pattern);
+    //mittelblau, gepunktet
+    if (playerStyle==1) {
+        setPlayerColor("#327BEA");
+        setPlayerPattern(Qt::Dense7Pattern);
     }
 
     //abgeschwächte Darstellung des Spielers Stufe 2:
-    //sehr helles blau, leerer Rahmen
-    if (pStyle==2) {
-        setPlayerColor("#CCF5FF");
+    //helles Blau, leerer Rahmen
+    if (playerStyle==2) {
+        setPlayerColor("#7FADF2");
         setPlayerPattern(Qt::NoBrush);
     }
 }
@@ -131,12 +136,12 @@ void player::keyPressEvent(QKeyEvent *keyEvent)
     switch (keyEvent->key()) {
     //wenn die linke Pfeiltaste gedrückt wird
     case Qt::Key_Left:
-        //führe Funktion movePlayer mit Status playerGoesLeft aus
+        //führe Methode movePlayer mit Status playerGoesLeft aus
         movePlayer(playerGoesLeft);
         break;
         //wenn die rechte Pfeiltaste gedrückt wird
     case Qt::Key_Right:
-        //führe Funktion movePlayer mit Status playerGoesRight aus
+        //führe Methode movePlayer mit Status playerGoesRight aus
         movePlayer(playerGoesRight);
         break;
         //für alle anderen KeyPressEvents: führe nichts aus
@@ -164,12 +169,12 @@ void player::setPlayerX(int pX)
         playerX = 3;
     }
     //Bewegung nach rechts
-    //wenn X-Koordinate des Spielers größer oder gleich 675
-    else if (pX >=675) {
-        //setze X-Koordinate auf 675
+    //wenn X-Koordinate des Spielers größer oder gleich 637
+    else if (pX >=637) {
+        //setze X-Koordinate auf 637
         //Bewegung weiter nach rechts so nicht möglich,
-        //da sobald >=675 immer 675
-        playerX = 675;
+        //da sobald >=637 immer 637
+        playerX = 637;
     }
 }
 
@@ -221,7 +226,7 @@ int player::getPlayerHeight() const
 /* Ende Defintion der Set- und Get-Methoden für die Position des Spielers */
 
 //Dekonstruktor der Klasse Movement
-Movement::~Movement()
+movement::~movement()
 {
 
 }

@@ -8,15 +8,15 @@
 #include "player.h"
 #include "element.h"
 
-/* Die Klasse gameArea erstellt das Zeichenfeld des Spiels, in dem sich der Spieler
- * und die Objekte bewegen. Sie ist zuständig für: den Timer und die Punkteanzeige,
+/* Die Klasse gameArea definiert das Zeichenfeld des Spiels, in dem sich der Spieler
+ * und die Gegner bewegen. Sie ist zuständig für: den Timer und die Punkteanzeige,
  * die Aktualisierung, das Pausieren und das gameOver des Spiels, für das Zeichnen der
- * Gegener und der Leben, für die Kollisionsabfrage von Spieler und Gegnern sowie
+ * Gegner und der Leben, für die Kollisionsabfrage von Spieler und Gegnern sowie
  * für das Auslösen der veränderten Darstellung des Spielers bei einer Kollision
- * Die Funktion regelt alles, was innerhalb des Spiels passiert
+ * Die Klasse regelt sozusagen alles, was innerhalb des Spiels passiert
  */
 
-//Namespace für Klasse gameArea festelgen
+//Namespace für gameArea festelgen
 namespace Ui {
 class gameArea;
 }
@@ -34,34 +34,34 @@ public:
     //Dekonstruktor
     ~gameArea() { }
 
-    //Methode, die Speicherung des Spiels definiert
-    void serialize(QFile &file);
-    //Methode, die Laden des Spiels definiert
-    void deserialize(QFile &file);
+    //Methode, um Punktelabel mit Punktevariable zu verknüpfen
+    void setGamePoints(QLabel *gamePoints){gamePointsLabel = gamePoints;}
+
+    //Methode, um Lebensanzeige in die gameArea zu integrieren
+    void drawLives(QPainter &painter);
+    //Methode, die optische Darstellung des Spielers verändert
+    void changePlayerStyle();
+    //Methode, um Gegner in die gameArea zu integrieren
+    void drawEnemies(QPainter &painter);
+
+    //Methode, die die gameOver-Anzeige & Spielzurücksetzung regelt
+    void gameIsOver();
 
     //set- und get-Methoden, die den Spielzustand (aktiv & inaktiv) regeln
     void setRunning (bool run);
     bool getRunning() {return running;}
 
-    //Methode, um Punktelabel mit Punktevariable zu verknüpfen
-    void setGamePoints(QLabel *gamePoints){gamePointsLabel = gamePoints;}
+    //Methode, die Speicherung der Spielinformationen definiert
+    void serialize(QFile &file);
+    //Methode, die Laden (Auslesen) der Spielinformationen ermöglicht
+    void deserialize(QFile &file);
 
-    //Methode, um Gegner in die gameArea zu integrieren
-    void drawEnemies(QPainter &painter);
-    //Methode, um Lebensanzeige in die gameArea zu integrieren
-    void drawLives(QPainter &painter);
-    //Methode, die optische Darstellung des Spielers verändert
-    void changePlayerStyle();
-
-    //Methode, die die gameOver-Anzeige & Spielzurücksetzung regelt
-    void gameIsOver();
-
-    //erstellt Vectorliste vom Typ element mit dem Namen enemies
-    //wird für drawEnemies()-Methode benötigt
+    //Vector vom Datentyp element (auf Basis der Klasse element)
+    //mit Namen 'enemies' --> Liste der Gegnerelemente
     std::vector<element*> enemies;
 
 private:
-    //Namespace-Variable
+    //Für Definition des Namespace
     Ui::gameArea *ui;
 
     //Deklaration des Spielers auf Basis der Klasse player
@@ -82,7 +82,7 @@ private:
     //mögliche Werte: true oder false
     bool running;
 
-    //Zustände der Spieler-Gegener-Interaktion
+    //Zustände des Spielers
     //mögliche Werte: true oder false
     bool unverwundbar;
     bool getroffen;
@@ -99,18 +99,18 @@ private:
     int gameOverTimer;
 
     //Defintion der Timeout-Länge
-    //für das jeweilige Ereignis
+    //für den jeweilige Spielerzustand
     const int unverwundbarTimeout = 30;
     const int getroffenTimeout = 50;
     const int gameOverTimeout = 120;
 
 
 private slots:
-    //Methode, um Spiel mit dem Timer regelmäßig zu aktualisieren
+    //Methode, um Spiel zu aktualisieren
     void updateGame();
 
 protected:
-    //Methode die Zeichnung von Gegnern und Leben auslöst
+    //Methode, die Zeichnung von Gegnern und Leben auslöst
     void paintEvent(QPaintEvent *event);
 
 };
